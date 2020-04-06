@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="8dp"
+    card_view:cardCornerRadius="8dp"
+    android:orientation="horizontal">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_gravity="center"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/item_count_number"
+            android:layout_width="30dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:paddingTop="11dp"
+            android:text="1"
+            android:textAlignment="center"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:textColor="#76D7C4"
+            android:textSize="22sp"
+            android:textStyle="italic|bold" />
+        <View
+            android:layout_width="3px"
+            android:layout_height="match_parent"
+            android:layout_marginRight="5dp"
+            android:layout_marginVertical="5dp"
+            android:backgroundTint="#999">
+
+        </View>
+
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_marginTop="12dp"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/item_student_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:text="芳芳"
+                android:layout_marginVertical="@dimen/text_margin"
+                android:textAppearance="?attr/textAppearanceListItem" />
+
+            <TextView
+                android:id="@+id/item_student_no"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:text="学号: 202160921"
+                android:layout_marginVertical="9dp"
+                android:layout_marginLeft="2dp"
+                android:textAppearance="?attr/textAppearanceListItem" />
+        </LinearLayout>
+
+
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="70dp"
+            android:layout_marginVertical="10dp"
+            android:orientation="horizontal"
+            android:columnCount="2"
+            android:rowCount="2"
+            android:textAppearance="?attr/textAppearanceListItem"
+            >
+            <LinearLayout
+                android:layout_margin="4dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="正常:"
+                    android:textSize="12sp"
+                    android:textColor="#76D7C4"
+                    android:textAppearance="?attr/textAppearanceListItem"/>
+
+                <TextView
+                    android:id="@+id/item_count_normal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:text="37"
+                    android:textSize="12sp"
+                    android:textColor="#76D7C4"
+                    android:textAppearance="?attr/textAppearanceListItem" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_margin="4dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="迟到:"
+                    android:textSize="12sp"
+                    android:textColor="#F7DC6F"
+                    android:textAppearance="?attr/textAppearanceListItem"/>
+
+                <TextView
+                    android:id="@+id/item_count_be_late"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:text="1"
+                    android:textSize="12sp"
+                    android:textColor="#F7DC6F"
+                    android:textAppearance="?attr/textAppearanceListItem" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_margin="4dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="缺勤:"
+                    android:textSize="12sp"
+                    android:textColor="#EC7063"
+                    android:textAppearance="?attr/textAppearanceListItem"/>
+
+                <TextView
+                    android:id="@+id/item_count_absence"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:text="3"
+                    android:textSize="12sp"
+                    android:textColor="#EC7063"
+                    android:textAppearance="?attr/textAppearanceListItem" />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_margin="4dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="事假:"
+                    android:textSize="12sp"
+                    android:textColor="#85C1E9"
+                    android:textAppearance="?attr/textAppearanceListItem"/>
+
+                <TextView
+                    android:id="@+id/item_count_leave"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="4dp"
+                    android:text="0"
+                    android:textSize="12sp"
+                    android:textColor="#85C1E9"
+                    android:textAppearance="?attr/textAppearanceListItem" />
+            </LinearLayout>
+
+
+        </GridLayout>
+
+    </LinearLayout>
+
+
+
+</androidx.cardview.widget.CardView>
+
