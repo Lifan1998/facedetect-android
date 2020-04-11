@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.ClassRoomItemVO;
 import com.example.facedetection.ui.classroom.dummy.DummyContent;
 import com.example.facedetection.ui.count.CountActivity;
 
@@ -19,8 +20,9 @@ public class ClassRoomActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(ClassRoomItemVO item) {
         Intent intent = new Intent(ClassRoomActivity.this, CountActivity.class);
+        intent.putExtra("classroomId", item.getClassId());
         startActivity(intent);
     }
 }

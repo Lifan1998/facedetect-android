@@ -2,6 +2,8 @@ package com.example.facedetection;
 
 import org.junit.Test;
 
+import java.io.File;
+
 import static org.junit.Assert.*;
 
 /**
@@ -12,6 +14,8 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void addition_isCorrect() {
-        assertEquals(4, 2 + 2);
+
+        File file = new File("/Users/apple/Downloads/切图/发现/头像.png");
+        System.out.println(file.length());
     }
 }

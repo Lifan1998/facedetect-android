@@ -19,27 +19,28 @@ import com.bumptech.glide.request.RequestOptions;
 import com.example.facedetection.R;
 import com.example.facedetection.data.emus.StudentStatus;
 import com.example.facedetection.data.model.Student;
+import com.example.facedetection.data.vo.StudentVO;
 
 import java.util.List;
 
 public class CheckinAdapter extends BaseAdapter {
 
-    private  List<Student> mValues;
+    private  List<StudentVO> mValues;
     private PlaceholderFragment.OnListFragmentInteractionListener mListener;
     private int mLayoutRes;
 
-    public CheckinAdapter(List<Student> mValues, PlaceholderFragment.OnListFragmentInteractionListener mListener, int mLayoutRes) {
+    public CheckinAdapter(List<StudentVO> mValues, PlaceholderFragment.OnListFragmentInteractionListener mListener, int mLayoutRes) {
         this.mValues = mValues;
         this.mListener = mListener;
         this.mLayoutRes = mLayoutRes;
     }
 
-    public CheckinAdapter(List<Student> items, PlaceholderFragment.OnListFragmentInteractionListener listener) {
+    public CheckinAdapter(List<StudentVO> items, PlaceholderFragment.OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
 
-    public CheckinAdapter(List<Student> mValues, int mLayoutRes) {
+    public CheckinAdapter(List<StudentVO> mValues, int mLayoutRes) {
         this.mValues = mValues;
         this.mLayoutRes = mLayoutRes;
     }
@@ -58,7 +59,7 @@ public class CheckinAdapter extends BaseAdapter {
     }
 
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
-        Student student = mValues.get(position);
+        StudentVO student = mValues.get(position);
         Glide.with(holder.mView).load(student.getAvatar()).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(holder.mAvatarView);
         holder.mNameView.setText(student.getName());
         holder.mStatusView.setText(StudentStatus.fromValue(student.getStatus()).getDesc());
@@ -98,7 +99,7 @@ public class CheckinAdapter extends BaseAdapter {
     }
 
     @Override
-    public Student getItem(int i) {
+    public StudentVO getItem(int i) {
         return mValues.get(i);
     }
 

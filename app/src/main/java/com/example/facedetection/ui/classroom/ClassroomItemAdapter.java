@@ -8,9 +8,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.ClassRoomItemVO;
 import com.example.facedetection.ui.classroom.ClassroomItemFragment.OnListFragmentInteractionListener;
 import com.example.facedetection.ui.classroom.dummy.DummyContent.DummyItem;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -20,10 +22,10 @@ import java.util.List;
  */
 public class ClassroomItemAdapter extends RecyclerView.Adapter<ClassroomItemAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<ClassRoomItemVO> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public ClassroomItemAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public ClassroomItemAdapter(List<ClassRoomItemVO> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -37,10 +39,17 @@ public class ClassroomItemAdapter extends RecyclerView.Adapter<ClassroomItemAdap
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-//        holder.mItem = mValues.get(position);
-//        holder.mIdView.setText(mValues.get(position).id);
-//        holder.mContentView.setText(mValues.get(position).content);
-//
+        ClassRoomItemVO classRoomItemVO = mValues.get(position);
+        holder.mItem = mValues.get(position);
+        holder.mName.setText(classRoomItemVO.getName());
+        if (classRoomItemVO.getUpdateTime() != null) {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+            holder.mTime.setText(simpleDateFormat.format(classRoomItemVO.getUpdateTime()));
+        }
+
+
+        holder.mTotalNum.setText(classRoomItemVO.getTotalNum() + "");
+        holder.mIdView.setText(position + 1 + "");
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -60,15 +69,19 @@ public class ClassroomItemAdapter extends RecyclerView.Adapter<ClassroomItemAdap
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-//        public final TextView mIdView;
-//        public final TextView mContentView;
-        public DummyItem mItem;
+        public final TextView mIdView;
+        public final TextView mName;
+        public final TextView mTotalNum;
+        public final TextView mTime;
+        public ClassRoomItemVO mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
-//            mIdView = (TextView) view.findViewById(R.id.item_number);
-//            mContentView = (TextView) view.findViewById(R.id.content);
+            mIdView = (TextView) view.findViewById(R.id.item_classroom_number);
+            mName = (TextView) view.findViewById(R.id.item_classroom_name);
+            mTotalNum = view.findViewById(R.id.item_classroom_total_num);
+            mTime = view.findViewById(R.id.item_classroom_time);
         }
 
         @Override

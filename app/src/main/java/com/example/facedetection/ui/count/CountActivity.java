@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.StudentCountVO;
 import com.example.facedetection.ui.checkindetail.CheckinDetailActivity;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.RadialPickerLayout;
@@ -19,11 +20,15 @@ import java.util.Calendar;
 public class CountActivity extends AppCompatActivity
 implements StudentCountItemFragment.OnListFragmentInteractionListener, DatePickerDialog.OnDateSetListener {
 
+    private static final String TAG = "CountActivity";
+    public static int classId;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_count);
         LinearLayout linearLayout = findViewById(R.id.time_range_view);
+        classId = getIntent().getIntExtra("classroomId", 0);
+        Log.v(TAG, classId + "");
         linearLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -43,7 +48,7 @@ implements StudentCountItemFragment.OnListFragmentInteractionListener, DatePicke
 
 
     @Override
-    public void onListFragmentInteraction(com.example.facedetection.ui.count.dummy.DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(StudentCountVO item) {
         Toast.makeText(CountActivity.this, "这里不可以点击哦", Toast.LENGTH_SHORT);
     }
 

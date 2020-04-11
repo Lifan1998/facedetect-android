@@ -9,19 +9,24 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.bitmap.CircleCrop;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.facedetection.BuildConfig;
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.CheckInItemVO;
+import com.example.facedetection.data.vo.User;
 import com.example.facedetection.ui.classroom.ClassRoomActivity;
 import com.example.facedetection.ui.setting.SettingsActivity;
 import com.example.facedetection.dummy.DummyContent;
 import com.example.facedetection.ui.checkindetail.CheckinDetailActivity;
-import com.example.facedetection.ui.count.CountActivity;
 import com.example.facedetection.ui.login.LoginActivity;
 import com.example.facedetection.util.SharedPreferencesUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 
@@ -40,6 +45,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.view.Menu;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
@@ -52,7 +58,11 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity
         implements RecordFragment.OnListFragmentInteractionListener,
         NavigationView.OnNavigationItemSelectedListener {
+    private static final String TAG = "MainActivity";
     private ImageView show_iv;
+    ImageView userAvatar;
+    TextView username;
+    TextView userEmail;
 
     private String mFilePath = "";
 
@@ -61,8 +71,30 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         // 初始化数据中心
         SharedPreferencesUtils.init(MainActivity.this);
-        setContentView(R.layout.activity_main);
+
+        View view = View.inflate(this, R.layout.activity_main, null);
+        View viewLeft = (View) View.inflate(this, R.layout.nav_header_main, null);
+
+        setContentView(view);
         Toolbar toolbar = findViewById(R.id.toolbar);
+         userAvatar = viewLeft.findViewById(R.id.menu_user_avatar);
+         username = viewLeft.findViewById(R.id.menu_username);
+         userEmail = viewLeft.findViewById(R.id.menu_user_email);
+
+        boolean isLogin = SharedPreferencesUtils.getBoolean(SharedPreferencesUtils.IS_LOGIN);
+
+        if (isLogin) {
+
+
+            Log.d(TAG, "onCreate: " + username.getText());
+
+            User user = SharedPreferencesUtils.getUser();
+            Log.d(TAG, "onCreate: " + username + user);
+            username.setText(user.getUsername());
+            Log.d(TAG, "onCreate: " + username.getText());
+            userEmail.setText(user.getEmail());
+            Glide.with(userAvatar).load(user.getAvatar()).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(userAvatar);
+        }
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +141,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
+
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -138,10 +171,10 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.action_login) {
             // TODO 判断登录没有
-            boolean isLogin = false;
+            boolean isLogin = SharedPreferencesUtils.getBoolean(SharedPreferencesUtils.IS_LOGIN);
 
             if (isLogin) {
-                Toast.makeText(MainActivity.this, "已登录", Toast.LENGTH_SHORT);
+                Toast.makeText(MainActivity.this, "已登录", Toast.LENGTH_LONG).show();
             } else {
                 Intent intent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(intent);
@@ -159,18 +192,45 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_home) {
             // Handle the camera action
+            // TODO 判断登录没有
+            boolean isLogin = SharedPreferencesUtils.getBoolean(SharedPreferencesUtils.IS_LOGIN);
+
+            if (isLogin) {
+
+
+                Log.d(TAG, "onNavigationItemSelected: " + username.getText());
+
+                User user = SharedPreferencesUtils.getUser();
+                Log.d(TAG, "onNavigationItemSelected: " + username + user);
+                username.setText(user.getUsername());
+                Log.d(TAG, "onNavigationItemSelected: " + username.getText());
+                userEmail.setText(user.getEmail());
+                Glide.with(userAvatar).load(user.getAvatar()).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(userAvatar);
+
+                Toast.makeText(MainActivity.this, "已登录", Toast.LENGTH_SHORT).show();
+            } else {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
         } else if (id == R.id.nav_gallery) {
             Intent intent = new Intent(MainActivity.this, ClassRoomActivity.class);
             startActivity(intent);
 
         } else if (id == R.id.nav_slideshow) {
-
+            Toast.makeText(MainActivity.this, "功能暂未开放", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_tools) {
-
+            Toast.makeText(MainActivity.this, "功能暂未开放", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_share) {
+            Toast.makeText(MainActivity.this, "功能暂未开放", Toast.LENGTH_SHORT).show();
 
         } else if (id == R.id.nav_send) {
+            SharedPreferencesUtils.putBoolean(SharedPreferencesUtils.IS_LOGIN, false);
+            SharedPreferencesUtils.setUser(null);
+            Toast.makeText(MainActivity.this, "已注销", Toast.LENGTH_SHORT).show();
 
+            username.setText("");
+            userEmail.setText("");
+            Glide.with(userAvatar).load(R.drawable.app_icon).apply(RequestOptions.bitmapTransform(new CircleCrop())).into(userAvatar);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -179,13 +239,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+    public void onListFragmentInteraction(CheckInItemVO item) {
         Intent intent = new Intent(MainActivity.this, CheckinDetailActivity.class);
-        intent.putExtra("id", item.id);
-        intent.putExtra("content", item.content);
-        intent.putExtra("className", item.className);
+        intent.putExtra("id", item.getId());
+        intent.putExtra("content", item.getStudentNum());
+        intent.putExtra("className", item.getClassName());
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        intent.putExtra("time", simpleDateFormat.format(item.time));
+        intent.putExtra("time", simpleDateFormat.format(item.getRecentTime()));
         startActivity(intent);
 
     }
@@ -194,45 +254,77 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
+
+        Log.v(TAG, requestCode + ": " + requestCode + data);
         //   返回缩略图
         if (requestCode == 100) {
             if (data != null) {
-                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-                if (bitmap != null) {
-                    show_iv.setImageBitmap(bitmap);
-                }
+//                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
+//                if (bitmap != null) {
+//                    show_iv.setImageBitmap(bitmap);
+//                }
             }
         }
         // 原图
         if (requestCode == 300) {
             FileInputStream inputStream = null;
             try {
-//                inputStream = new FileInputStream(mFilePath);
-//                Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-                if (true) {
-//                    show_iv.setImageBitmap(rotateBitmap(bitmap));
-//                    System.out.println(bitmap);
+//                try {
+//                    inputStream = new FileInputStream(mFilePath);
+//                } catch (FileNotFoundException e) {
+//                    e.printStackTrace();
+//                }
+                Bitmap bitmap = null;
+//                bitmap = (Bitmap) data.getExtras().get("data");
+                Log.v(TAG, bitmap +"");
+
+                Uri uri = data.getData();
+
+                Log.v(TAG, bitmap + " " + uri);
+
+                try {
+                    bitmap = null;
+                    bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                Log.v(TAG, bitmap + "");
+
+
+                bitmap = null;
+
+                Log.v(TAG, bitmap + "");
+
+
+
+                bitmap = BitmapFactory.decodeStream(inputStream);
+
+                bitmap = null;
+                Log.v(TAG, bitmap + "");
+                if (bitmap != null) {
+
+                    Log.v(TAG, bitmap.toString());
                     final ProgressDialog pd5 = new ProgressDialog(this);
                     pd5.setProgressStyle(ProgressDialog.STYLE_SPINNER);// 设置进度条的形式为圆形转动的进度条
                     pd5.setCancelable(true);// 设置是否可以通过点击Back键取消
                     pd5.setCanceledOnTouchOutside(false);// 设置在点击Dialog外是否取消Dialog进度条
                     pd5.setIcon(R.mipmap.ic_launcher);//设置提示的title的图标，默认是没有的，如果没有设置title的话只设置Icon是不会显示图标的
                     pd5.setTitle("提示");
-// dismiss监听
+                    // dismiss监听
                     pd5.setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
                             // TODO Auto-generated method stub
                         }
                     });
-// 监听Key事件被传递给dialog
+                    // 监听Key事件被传递给dialog
                     pd5.setOnKeyListener(new DialogInterface.OnKeyListener() {
                         @Override
                         public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                             return false;
                         }
                     });
-// 监听cancel事件
+                    // 监听cancel事件
                     pd5.setOnCancelListener(new DialogInterface.OnCancelListener() {
                         @Override
                         public void onCancel(DialogInterface dialog) {
@@ -275,7 +367,6 @@ public class MainActivity extends AppCompatActivity
                                 Thread.sleep(5000);
                                 // cancel和dismiss方法本质都是一样的，都是从屏幕中删除Dialog,唯一的区别是
                                 // 调用cancel方法会回调DialogInterface.OnCancelListener如果注册的话,dismiss方法不会回掉
-
                                 pd5.cancel();
                                 Intent intent = new Intent(MainActivity.this, CheckinDetailActivity.class);
                                 intent.putExtra("id", 1);
@@ -307,7 +398,6 @@ public class MainActivity extends AppCompatActivity
             Uri uri = data.getData();
             try {
                 Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                show_iv.setImageBitmap(bitmap);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

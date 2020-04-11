@@ -11,10 +11,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.CheckInItemVO;
 import com.example.facedetection.dummy.DummyContent;
 import com.example.facedetection.dummy.DummyContent.DummyItem;
+import com.example.facedetection.service.http.task.CheckInItemTask;
+import com.example.facedetection.util.SharedPreferencesUtils;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A fragment representing a list of Items.
@@ -29,6 +36,7 @@ public class RecordFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    RecyclerView recyclerView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -64,15 +72,35 @@ public class RecordFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyRecordRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+
+
+
         }
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        boolean isLogin = SharedPreferencesUtils.getBoolean(SharedPreferencesUtils.IS_LOGIN);
+        if (isLogin) {
+            try {
+                List<CheckInItemVO> checkInItemVOList = new CheckInItemTask().execute().get();
+                recyclerView.setAdapter(new MyRecordRecyclerViewAdapter(checkInItemVOList, mListener));
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Toast.makeText(getActivity(), "请先登录", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -105,6 +133,6 @@ public class RecordFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(CheckInItemVO item);
     }
 }

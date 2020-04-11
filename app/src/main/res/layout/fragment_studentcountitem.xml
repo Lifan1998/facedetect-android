@@ -40,7 +40,7 @@
             android:layout_marginTop="12dp"
             android:layout_height="wrap_content">
             <TextView
-                android:id="@+id/item_student_name"
+                android:id="@+id/item_count_student_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
@@ -49,7 +49,7 @@
                 android:textAppearance="?attr/textAppearanceListItem" />
 
             <TextView
-                android:id="@+id/item_student_no"
+                android:id="@+id/item_count_student_no"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="12sp"

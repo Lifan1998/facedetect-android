@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="12dp"
             android:textSize="22sp"
-            android:text="2020-07-09"/>
+            android:text="2020-02-09"/>
 
         <TextView
             android:id="@+id/time_range_to"
@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="12dp"
             android:textSize="22sp"
-            android:text="2020-07-09"/>
+            android:text="2020-06-30"/>
 
     </LinearLayout>
 

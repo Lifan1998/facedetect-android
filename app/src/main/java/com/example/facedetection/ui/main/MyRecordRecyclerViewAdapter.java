@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.CheckInItemVO;
 import com.example.facedetection.ui.main.RecordFragment.OnListFragmentInteractionListener;
 import com.example.facedetection.dummy.DummyContent.DummyItem;
 
@@ -21,10 +22,10 @@ import java.util.List;
  */
 public class MyRecordRecyclerViewAdapter extends RecyclerView.Adapter<MyRecordRecyclerViewAdapter.ViewHolder> {
 
-    private final List<DummyItem> mValues;
+    private final List<CheckInItemVO> mValues;
     private final OnListFragmentInteractionListener mListener;
 
-    public MyRecordRecyclerViewAdapter(List<DummyItem> items, OnListFragmentInteractionListener listener) {
+    public MyRecordRecyclerViewAdapter(List<CheckInItemVO> items, OnListFragmentInteractionListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -39,12 +40,14 @@ public class MyRecordRecyclerViewAdapter extends RecyclerView.Adapter<MyRecordRe
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).id);
-//        holder.mContentView.setText(mValues.get(position).content);
+        holder.mIdView.setText(position +  1 + "");
         String format = "yyyy-MM-dd HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
-        holder.mTime.setText(simpleDateFormat.format(mValues.get(position).time));
-        holder.mClassName.setText(mValues.get(position).className);
+        holder.mTime.setText(simpleDateFormat.format(mValues.get(position).getRecentTime()));
+        holder.mClassName.setText(mValues.get(position).getClassName());
+        holder.studentNum.setText(mValues.get(position).getStudentNum() + "");
+        holder.studentTotalNUm.setText("/" + mValues.get(position).getStudentTotalNum() + "人");
+
 
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -67,23 +70,25 @@ public class MyRecordRecyclerViewAdapter extends RecyclerView.Adapter<MyRecordRe
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
         public final TextView mIdView;
-        public final TextView mContentView;
+        public final TextView studentNum;
+        public final TextView studentTotalNUm;
         public final TextView mClassName;
         public final TextView mTime;
-        public DummyItem mItem;
+        public CheckInItemVO mItem;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
             mIdView = (TextView) view.findViewById(R.id.item_number);
-            mContentView = (TextView) view.findViewById(R.id.content);
+            studentNum = (TextView) view.findViewById(R.id.checkin_list_studentNum);
+            studentTotalNUm = view.findViewById(R.id.checkin_list_student_totalNum);
             mClassName = view.findViewById(R.id.className);
             mTime = view.findViewById(R.id.time);
         }
 
         @Override
         public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
+            return super.toString() + " '" + studentNum.getText() + "'";
         }
     }
 }

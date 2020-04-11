@@ -13,10 +13,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.ClassRoomItemVO;
+import com.example.facedetection.service.http.task.ClassroomListTask;
 import com.example.facedetection.ui.classroom.dummy.DummyContent;
 import com.example.facedetection.ui.classroom.dummy.DummyContent.DummyItem;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * A fragment representing a list of Items.
@@ -72,7 +75,16 @@ public class ClassroomItemFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new ClassroomItemAdapter(DummyContent.ITEMS, mListener));
+
+            try {
+                List<ClassRoomItemVO> classRoomItemVOList =  new ClassroomListTask().execute().get();
+                recyclerView.setAdapter(new ClassroomItemAdapter(classRoomItemVOList, mListener));
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
         }
         return view;
     }
@@ -107,6 +119,6 @@ public class ClassroomItemFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(ClassRoomItemVO item);
     }
 }

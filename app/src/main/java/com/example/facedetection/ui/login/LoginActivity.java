@@ -23,11 +23,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.facedetection.R;
-import com.example.facedetection.ui.login.LoginViewModel;
-import com.example.facedetection.ui.login.LoginViewModelFactory;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String TAG = "LoginActivity";
     private LoginViewModel loginViewModel;
 
     @Override

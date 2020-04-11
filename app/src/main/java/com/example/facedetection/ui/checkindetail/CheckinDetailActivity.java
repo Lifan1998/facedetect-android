@@ -12,7 +12,9 @@ import android.os.Bundle;
 import com.example.facedetection.BuildConfig;
 import com.example.facedetection.R;
 import com.example.facedetection.data.model.Student;
+import com.example.facedetection.data.vo.StudentVO;
 import com.example.facedetection.dummy.DummyContent;
+import com.example.facedetection.service.http.task.UpdateStudentStatusTask;
 import com.example.facedetection.ui.main.MainActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
@@ -40,11 +42,15 @@ public class CheckinDetailActivity extends AppCompatActivity
     private final String TAG = "CheckinDetailActivity";
     private String mFilePath = "";
 
+    private int checkInId;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Intent intent = getIntent();
         setContentView(R.layout.activity_checkin_detail);
-        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager());
+        checkInId = intent.getIntExtra("id", 0);
+        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(this, getSupportFragmentManager(), checkInId);
         ViewPager viewPager = findViewById(R.id.view_pager);
         viewPager.setAdapter(sectionsPagerAdapter);
         TabLayout tabs = findViewById(R.id.tabs);
@@ -69,11 +75,11 @@ public class CheckinDetailActivity extends AppCompatActivity
             }
         });
 
-        Intent intent = getIntent();
-        String id = intent.getStringExtra("id");
+
+
         String className = intent.getStringExtra("className");
         String time = intent.getStringExtra("time");
-        Log.d(TAG, "onCreate: id " + id);
+        Log.d(TAG, "onCreate: id " + checkInId);
 
         TextView textView = findViewById(R.id.title_time);
         TextView textView1 = findViewById(R.id.title);
@@ -199,20 +205,19 @@ public class CheckinDetailActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(Student student) {
-        Log.v("itemclick", "11111");
+    public void onListFragmentInteraction(StudentVO student) {
         showSingleChoiceDialog(CheckinDetailActivity.this, student);
 
     }
     int yourChoice;
-    private void showSingleChoiceDialog(Context context, Student student){
+    private void showSingleChoiceDialog(Context context, StudentVO studentVO){
         final String[] items = { "正常","迟到","缺勤","事假" };
         yourChoice = -1;
         AlertDialog.Builder singleChoiceDialog;
         singleChoiceDialog = new AlertDialog.Builder(context);
-        singleChoiceDialog.setTitle(student.getName());
+        singleChoiceDialog.setTitle(studentVO.getName());
         // 第二个参数是默认选项，此处设置为0
-        singleChoiceDialog.setSingleChoiceItems(items, 0,
+        singleChoiceDialog.setSingleChoiceItems(items, studentVO.getStatus() - 1,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -224,8 +229,9 @@ public class CheckinDetailActivity extends AppCompatActivity
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (yourChoice != -1) {
+                            new UpdateStudentStatusTask().execute(checkInId + "", studentVO.getId() + "", yourChoice + 1 + "");
                             Toast.makeText(context,
-                                    "你选择了" + items[yourChoice],
+                                    "更新状态" + items[yourChoice],
                                     Toast.LENGTH_SHORT).show();
                         }
                     }

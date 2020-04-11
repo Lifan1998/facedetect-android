@@ -71,7 +71,7 @@
                 android:textAppearance="?attr/textAppearanceListItem"/>
 
             <TextView
-                android:id="@+id/content"
+                android:id="@+id/checkin_list_studentNum"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="37"
@@ -79,6 +79,7 @@
                 android:textColor="#76D7C4"
                 android:textAppearance="?attr/textAppearanceListItem" />
             <TextView
+                android:id="@+id/checkin_list_student_totalNum"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"

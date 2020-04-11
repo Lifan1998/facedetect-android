@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper=false)
 public class StudentsVO extends Student {
     public StudentsVO(int id, String studentNo, String name, int status, String avatar) {
         super(id, studentNo, name, status, avatar);

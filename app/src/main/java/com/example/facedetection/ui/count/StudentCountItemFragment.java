@@ -8,13 +8,19 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.facedetection.R;
+import com.example.facedetection.data.vo.ClassRoomVO;
+import com.example.facedetection.data.vo.StudentCountVO;
+import com.example.facedetection.service.http.task.ClassroomDetailTask;
 import com.example.facedetection.ui.count.dummy.DummyContent;
 import com.example.facedetection.ui.count.dummy.DummyContent.DummyItem;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * A fragment representing a list of Items.
@@ -26,9 +32,11 @@ public class StudentCountItemFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
+    private static final String TAG = "StudentCountIte";
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private int classId = 1;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -39,10 +47,12 @@ public class StudentCountItemFragment extends Fragment {
 
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static StudentCountItemFragment newInstance(int columnCount) {
+    public static StudentCountItemFragment newInstance(int columnCount, int classId) {
         StudentCountItemFragment fragment = new StudentCountItemFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
+        args.putInt("classId", classId);
+        Log.v(TAG, args + "" + columnCount);
         fragment.setArguments(args);
         return fragment;
     }
@@ -53,7 +63,11 @@ public class StudentCountItemFragment extends Fragment {
 
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+            classId = getArguments().getInt("classId");
+
         }
+        classId = CountActivity.classId;
+        Log.v(TAG, classId + "");
     }
 
     @Override
@@ -70,7 +84,15 @@ public class StudentCountItemFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyStudentCountItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
+            try {
+                ClassRoomVO classRoomVO = new ClassroomDetailTask().execute(classId + "").get();
+                recyclerView.setAdapter(new MyStudentCountItemRecyclerViewAdapter(classRoomVO.getStudentDTOS(), mListener));
+
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
         return view;
     }
@@ -105,6 +127,6 @@ public class StudentCountItemFragment extends Fragment {
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(DummyItem item);
+        void onListFragmentInteraction(StudentCountVO item);
     }
 }
