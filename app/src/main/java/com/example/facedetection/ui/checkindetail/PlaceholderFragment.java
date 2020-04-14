@@ -47,7 +47,6 @@ public class PlaceholderFragment extends Fragment {
         PlaceholderFragment fragment = new PlaceholderFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(ARG_SECTION_NUMBER, index);
-        Log.v("tab", index + "");
         fragment.setArguments(bundle);
         fragment.checkInId = checkInId;
         return fragment;
@@ -74,7 +73,6 @@ public class PlaceholderFragment extends Fragment {
         try {
             CheckInDetailVO checkInDetailVO = new CheckInDetailTask().execute(checkInId+"").get();
             List<StudentVO> studentVOList = checkInDetailVO.getStudentVOList();
-            Log.v("tab", index + "");
 
             switch (index) {
                 case 1: break;
@@ -99,15 +97,6 @@ public class PlaceholderFragment extends Fragment {
 
             }
         });
-
-//        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                Log.v("itemclick", position+"");
-//                showSingleChoiceDialog(getActivity().getApplicationContext());
-//
-//            }
-//        });
         return root;
     }
     @Override

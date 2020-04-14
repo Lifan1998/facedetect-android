@@ -1,35 +1,47 @@
 package com.example.facedetection.ui.main;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
+import com.alibaba.fastjson.JSON;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.facedetection.BuildConfig;
 import com.example.facedetection.R;
+import com.example.facedetection.data.Result;
 import com.example.facedetection.data.vo.CheckInItemVO;
 import com.example.facedetection.data.vo.User;
+import com.example.facedetection.service.http.request.FaceDetectMultifaceRequest;
+import com.example.facedetection.service.http.task.CheckInTask;
 import com.example.facedetection.ui.classroom.ClassRoomActivity;
 import com.example.facedetection.ui.setting.SettingsActivity;
 import com.example.facedetection.dummy.DummyContent;
 import com.example.facedetection.ui.checkindetail.CheckinDetailActivity;
 import com.example.facedetection.ui.login.LoginActivity;
+import com.example.facedetection.util.ImageUtils;
 import com.example.facedetection.util.SharedPreferencesUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.FileProvider;
 import androidx.core.view.GravityCompat;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -54,12 +66,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity
         implements RecordFragment.OnListFragmentInteractionListener,
         NavigationView.OnNavigationItemSelectedListener {
     private static final String TAG = "MainActivity";
-    private ImageView show_iv;
     ImageView userAvatar;
     TextView username;
     TextView userEmail;
@@ -85,7 +98,6 @@ public class MainActivity extends AppCompatActivity
 
         if (isLogin) {
 
-
             Log.d(TAG, "onCreate: " + username.getText());
 
             User user = SharedPreferencesUtils.getUser();
@@ -100,33 +112,10 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-                Intent intent = new Intent();
-                // 1. 直接调用系统相机 没有返回值
-//       intent.setAction("android.media.action.STILL_IMAGE_CAMERA");
-//       startActivity(intent);
-                // 2 调用系统相机 有返回值 但是返回值是 缩略图
-//       intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
-//       startActivityForResult(intent, 100);
-                // 3 .返回原图
-                mFilePath =
-                        Environment.getExternalStorageDirectory().getAbsolutePath() +
-                                "/picture.png";
 
-                Uri uri = FileProvider.getUriForFile(MainActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(mFilePath));
+                showListDialog(getApplicationContext());
 
-                intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
 
-                //  指定路径
-                intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivityForResult(intent, 300);
-
-                // 4. 打开系统相册
-//      intent.setAction(Intent.ACTION_PICK);
-//      intent.setType("image/*");
-//      startActivityForResult(intent, 500);
             }
         });
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -136,6 +125,7 @@ public class MainActivity extends AppCompatActivity
         drawer.addDrawerListener(toggle);
         toggle.syncState();
         navigationView.setNavigationItemSelectedListener(this);
+
     }
 
     @Override
@@ -241,148 +231,78 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onListFragmentInteraction(CheckInItemVO item) {
         Intent intent = new Intent(MainActivity.this, CheckinDetailActivity.class);
-        intent.putExtra("id", item.getId());
-        intent.putExtra("content", item.getStudentNum());
-        intent.putExtra("className", item.getClassName());
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        intent.putExtra("time", simpleDateFormat.format(item.getRecentTime()));
+        intent.putExtra("checkInId", item.getId() + "");
         startActivity(intent);
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
 
         Log.v(TAG, requestCode + ": " + requestCode + data);
-        //   返回缩略图
-        if (requestCode == 100) {
-            if (data != null) {
-//                Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-//                if (bitmap != null) {
-//                    show_iv.setImageBitmap(bitmap);
-//                }
-            }
-        }
         // 原图
         if (requestCode == 300) {
+            Optional<Bitmap> bitmapOptional = null;
             FileInputStream inputStream = null;
             try {
-//                try {
-//                    inputStream = new FileInputStream(mFilePath);
-//                } catch (FileNotFoundException e) {
-//                    e.printStackTrace();
-//                }
-                Bitmap bitmap = null;
-//                bitmap = (Bitmap) data.getExtras().get("data");
-                Log.v(TAG, bitmap +"");
-
-                Uri uri = data.getData();
-
-                Log.v(TAG, bitmap + " " + uri);
-
                 try {
-                    bitmap = null;
-                    bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
+                    inputStream = new FileInputStream(mFilePath);
+                    bitmapOptional = Optional.of(BitmapFactory.decodeStream(inputStream));
+                    Toast.makeText(getParent(), "获取图片成功", Toast.LENGTH_SHORT).show();
+
+                } catch (Exception e) {
+                    Toast.makeText(getApplicationContext(), "图片获取失败", Toast.LENGTH_SHORT).show();
                 }
-                Log.v(TAG, bitmap + "");
 
+                if (bitmapOptional.isPresent()) {
+                    Bitmap bitmap = bitmapOptional.get();
 
-                bitmap = null;
-
-                Log.v(TAG, bitmap + "");
-
-
-
-                bitmap = BitmapFactory.decodeStream(inputStream);
-
-                bitmap = null;
-                Log.v(TAG, bitmap + "");
-                if (bitmap != null) {
-
-                    Log.v(TAG, bitmap.toString());
                     final ProgressDialog pd5 = new ProgressDialog(this);
                     pd5.setProgressStyle(ProgressDialog.STYLE_SPINNER);// 设置进度条的形式为圆形转动的进度条
                     pd5.setCancelable(true);// 设置是否可以通过点击Back键取消
                     pd5.setCanceledOnTouchOutside(false);// 设置在点击Dialog外是否取消Dialog进度条
-                    pd5.setIcon(R.mipmap.ic_launcher);//设置提示的title的图标，默认是没有的，如果没有设置title的话只设置Icon是不会显示图标的
-                    pd5.setTitle("提示");
-                    // dismiss监听
-                    pd5.setOnDismissListener(new DialogInterface.OnDismissListener() {
-                        @Override
-                        public void onDismiss(DialogInterface dialog) {
-                            // TODO Auto-generated method stub
-                        }
-                    });
-                    // 监听Key事件被传递给dialog
-                    pd5.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                        @Override
-                        public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                            return false;
-                        }
-                    });
-                    // 监听cancel事件
-                    pd5.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            // TODO Auto-generated method stub
-                        }
-                    });
-//设置可点击的按钮，最多有三个(默认情况下)
-//                    pd5.setButton(DialogInterface.BUTTON_POSITIVE, "后台识别",
-//                            new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    // TODO Auto-generated method stub
-//                                    Intent intent = new Intent(MainActivity.this, CheckinDetailActivity.class);
-//                                    intent.putExtra("id", 1);
-//                                    intent.putExtra("content", "创建后");
-//                                    startActivity(intent);
-//                                }
-//                            });
-                    pd5.setButton(DialogInterface.BUTTON_NEGATIVE, "取消",
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // TODO Auto-generated method stub
-                                    pd5.dismiss();
-                                }
-                            });
-//                    pd5.setButton(DialogInterface.BUTTON_NEUTRAL, "中立",
-//                            new DialogInterface.OnClickListener() {
-//                                @Override
-//                                public void onClick(DialogInterface dialog, int which) {
-//                                    // TODO Auto-generated method stub
-//                                }
-//                            });
+                    pd5.setIcon(R.drawable.app_icon);//设置提示的title的图标，默认是没有的，如果没有设置title的话只设置Icon是不会显示图标的
+                    pd5.setTitle("创建打卡");
+
                     pd5.setMessage("人脸识别中");
                     pd5.show();
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                Thread.sleep(5000);
-                                // cancel和dismiss方法本质都是一样的，都是从屏幕中删除Dialog,唯一的区别是
-                                // 调用cancel方法会回调DialogInterface.OnCancelListener如果注册的话,dismiss方法不会回掉
-                                pd5.cancel();
-                                Intent intent = new Intent(MainActivity.this, CheckinDetailActivity.class);
-                                intent.putExtra("id", 1);
-                                intent.putExtra("content", "");
-                                intent.putExtra("className", "网嵌162");
-                                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                intent.putExtra("time", simpleDateFormat.format(new Date()));
-                                startActivity(intent);
-                                // dialog.dismiss();
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
+
+                    try {
+
+                        FaceDetectMultifaceRequest request = new FaceDetectMultifaceRequest();
+
+                        request.setCreateCheckIn(true);
+                        request.setUserId(Integer.parseInt(SharedPreferencesUtils.getString(SharedPreferencesUtils.USER_ID)));
+                        Bitmap bitmap1 = ImageUtils.compress0(bitmap, 200);
+                        String imageBase64 = ImageUtils.bitmapToBase64(bitmap1);
+
+                        Log.v("TAG", "paizhao:" + imageBase64);
+
+                        request.setImage(imageBase64);
+
+                        Result result = new CheckInTask().execute(JSON.toJSONString(request)).get();
+                        if (result.isSuccess()) {
+
+                            Intent intent = new Intent(MainActivity.this, CheckinDetailActivity.class);
+                            intent.putExtra("checkInId", result.toString());
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(getApplicationContext(), result.toString(), Toast.LENGTH_LONG).show();
                         }
-                    }).start();
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } catch (ExecutionException e) {
+                        e.printStackTrace();
+                    }
+
+                    pd5.cancel();
 
                 }
+
             } finally {
                 if (inputStream != null) {
                     try {
@@ -392,16 +312,72 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
             }
+
         }
+
         // 相册
+
         if (requestCode == 500) {
-            Uri uri = data.getData();
+
+
+            if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(MainActivity.this, "取消从相册选择", Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Uri imageUri = data.getData();
+            Log.v("TAG", "相册" + imageUri.toString());
+            Bitmap bitmap = null;
             try {
-                Bitmap bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(uri));
+                bitmap = BitmapFactory.decodeStream(MainActivity.this.getContentResolver().openInputStream(imageUri));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+
+            final ProgressDialog pd5 = new ProgressDialog(this);
+            pd5.setProgressStyle(ProgressDialog.STYLE_SPINNER);// 设置进度条的形式为圆形转动的进度条
+            pd5.setCancelable(true);// 设置是否可以通过点击Back键取消
+            pd5.setCanceledOnTouchOutside(false);// 设置在点击Dialog外是否取消Dialog进度条
+            pd5.setIcon(R.drawable.app_icon);//设置提示的title的图标，默认是没有的，如果没有设置title的话只设置Icon是不会显示图标的
+            pd5.setTitle("创建打卡");
+            pd5.setMessage("人脸识别中");
+            pd5.show();
+
+            try {
+
+                FaceDetectMultifaceRequest request = new FaceDetectMultifaceRequest();
+
+                request.setCreateCheckIn(true);
+
+
+                String imageBase64 = ImageUtils.bitmapToBase64(bitmap);
+
+                Log.v("TAG", "相册" + imageBase64);
+
+                request.setImage(imageBase64);
+
+                Result result = new CheckInTask().execute(JSON.toJSONString(request)).get();
+
+                if (result.isSuccess()) {
+
+                    Intent intent = new Intent(MainActivity.this, CheckinDetailActivity.class);
+                    intent.putExtra("checkInId", result.toString());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(getApplicationContext(), result.toString(), Toast.LENGTH_LONG).show();
+                }
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+
+            pd5.cancel();
+
+
         }
+
     }
 
     // 三星机型拍照的时候照片会旋转90度 所以需要转回来
@@ -411,5 +387,47 @@ public class MainActivity extends AppCompatActivity
         Bitmap map = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         return map;
     }
+
+
+    private void showListDialog(Context context) {
+        final String[] items = { "拍照","相册"};
+        AlertDialog.Builder listDialog =
+                new AlertDialog.Builder(MainActivity.this);
+        listDialog.setTitle("选择照片");
+        listDialog.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+
+                if (which == 0) {
+                    Intent intent = new Intent();
+                    // 3 .返回原图
+                    mFilePath =
+                            Environment.getExternalStorageDirectory().getAbsolutePath() +
+                                    "/picture.png";
+
+                    Uri uri = FileProvider.getUriForFile(MainActivity.this, BuildConfig.APPLICATION_ID + ".provider", new File(mFilePath));
+
+                    intent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                    //  指定路径
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivityForResult(intent, 300);
+
+
+                } else {
+                    Intent intent = new Intent();
+                    // 4. 打开系统相册
+                    intent.setAction(Intent.ACTION_PICK);
+                    intent.setType("image/*");
+                    startActivityForResult(intent, 500);
+                }
+            }
+        });
+        listDialog.show();
+    }
+
+
 
 }

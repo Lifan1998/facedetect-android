@@ -46,6 +46,13 @@ implements StudentCountItemFragment.OnListFragmentInteractionListener, DatePicke
         });
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        classId = getIntent().getIntExtra("classroomId", 0);
+        Log.v(TAG,  "onResume " + classId + "");
+    }
+
 
     @Override
     public void onListFragmentInteraction(StudentCountVO item) {
