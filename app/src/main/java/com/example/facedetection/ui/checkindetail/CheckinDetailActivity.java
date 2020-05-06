@@ -47,6 +47,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Optional;
@@ -137,11 +138,11 @@ public class CheckinDetailActivity extends AppCompatActivity
 
                         FaceDetectMultifaceRequest request = new FaceDetectMultifaceRequest();
 
-                        request.setCreateCheckIn(true);
+                        request.setCreateCheckIn(false);
                         request.setUserId(Integer.parseInt(SharedPreferencesUtils.getString(SharedPreferencesUtils.USER_ID)));
+                        request.setCheckInId(checkInId);
                         Bitmap bitmap1 = ImageUtils.compress0(bitmap, 200);
                         String imageBase64 = ImageUtils.bitmapToBase64(bitmap1);
-
                         request.setImage(imageBase64);
 
                         Result result = new CheckInTask().execute(JSON.toJSONString(request)).get();
@@ -183,21 +184,13 @@ public class CheckinDetailActivity extends AppCompatActivity
                 return;
             }
 
+            Bitmap bitmap = null;
             Uri imageUri = data.getData();
-
-            Uri selectedImage = data.getData();
-            String[] filePathColumn = {MediaStore.Images.Media.DATA};
-            Cursor cursor = getContentResolver().query(selectedImage,
-                    filePathColumn, null, null, null);
-            assert cursor != null;
-            cursor.moveToFirst();
-            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-            String picturePath = cursor.getString(columnIndex);
-            cursor.close();
-            File file = new File(picturePath);
-            String base64String = ImageUtils.encodeFileToBase64Binary(file);
-
-            Log.e("TAG", "相册" + base64String);
+            try {
+                bitmap = BitmapFactory.decodeStream(CheckinDetailActivity.this.getContentResolver().openInputStream(imageUri));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
 
             final ProgressDialog pd5 = new ProgressDialog(this);
             pd5.setProgressStyle(ProgressDialog.STYLE_SPINNER);// 设置进度条的形式为圆形转动的进度条
@@ -212,10 +205,12 @@ public class CheckinDetailActivity extends AppCompatActivity
 
                 FaceDetectMultifaceRequest request = new FaceDetectMultifaceRequest();
 
-                request.setCreateCheckIn(true);
+                String imageBase64 = ImageUtils.bitmapToBase64(bitmap);
 
-
-                request.setImage(base64String);
+                request.setCreateCheckIn(false);
+                request.setCheckInId(checkInId);
+                request.setUserId(Integer.parseInt(SharedPreferencesUtils.getString(SharedPreferencesUtils.USER_ID)));
+                request.setImage(imageBase64);
 
                 Result result = new CheckInTask().execute(JSON.toJSONString(request)).get();
                 if (result.isSuccess()) {

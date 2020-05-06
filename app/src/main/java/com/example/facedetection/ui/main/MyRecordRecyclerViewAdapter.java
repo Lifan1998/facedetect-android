@@ -13,6 +13,7 @@ import com.example.facedetection.ui.main.RecordFragment.OnListFragmentInteractio
 import com.example.facedetection.dummy.DummyContent.DummyItem;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,7 +23,7 @@ import java.util.List;
  */
 public class MyRecordRecyclerViewAdapter extends RecyclerView.Adapter<MyRecordRecyclerViewAdapter.ViewHolder> {
 
-    private final List<CheckInItemVO> mValues;
+    private List<CheckInItemVO> mValues = new ArrayList<>();
     private final OnListFragmentInteractionListener mListener;
 
     public MyRecordRecyclerViewAdapter(List<CheckInItemVO> items, OnListFragmentInteractionListener listener) {

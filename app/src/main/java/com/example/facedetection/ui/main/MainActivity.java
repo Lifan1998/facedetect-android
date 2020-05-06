@@ -348,7 +348,7 @@ public class MainActivity extends AppCompatActivity
                 FaceDetectMultifaceRequest request = new FaceDetectMultifaceRequest();
 
                 request.setCreateCheckIn(true);
-
+                request.setUserId(Integer.parseInt(SharedPreferencesUtils.getString(SharedPreferencesUtils.USER_ID)));
 
                 String imageBase64 = ImageUtils.bitmapToBase64(bitmap);
 
